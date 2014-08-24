@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+   	android:layout_width="match_parent"
+   	android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="15dp" >
+
+    <ScrollView
+        style="@style/match_wrap"
+        android:scrollbars="none" >
+        <LinearLayout
+            android:id="@+id/ll_action_sheet_content"
+            style="@style/match_wrap"
+            android:background="@drawable/my_bg_white_round"
+            android:orientation="vertical" >
+        </LinearLayout>
+    </ScrollView>
+
+    <Button
+        android:id="@+id/btn_action_sheet_cancel"
+        style="@style/match_wrap"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/my_action_sheet_btn_bg"
+        android:padding="12dp"
+        android:text="@string/cancel"
+        android:textColor="#34b6e8" />
+
+</LinearLayout>

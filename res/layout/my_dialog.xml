@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/match_wrap"
+    android:minWidth="290dp"
+    android:padding="15dp"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/my_dialog_title_tv"
+        style="@style/match_wrap"
+        android:gravity="center"
+        android:padding="10dp"
+        android:background="@drawable/my_dialog_up_bg"
+        android:textColor="@android:color/black"
+        android:textSize="20sp" />
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:src="#34b6e8" />
+
+    <ScrollView
+        android:id="@+id/my_dialog_content_sv"
+        style="@style/match_wrap"
+        android:background="@android:color/white"
+        android:minHeight="54dp"
+        android:paddingBottom="10dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:paddingTop="10dp" >
+
+        <TextView
+            android:id="@+id/my_dialog_content_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:textSize="16sp"
+            android:textColor="@android:color/black" />
+    </ScrollView>
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:src="#dcdadd" />
+
+    <LinearLayout
+        style="@style/match_wrap"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/my_dialog_left_btn"
+            style="@style/wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/my_dialog_left_btn"
+            android:padding="15dp"
+            android:textColor="#555555"
+            />
+
+        <ImageView
+            android:id="@+id/my_dialog_line"
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:src="#dcdadd" />
+
+        <Button
+            android:id="@+id/my_dialog_right_btn"
+            style="@style/wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/my_dialog_right_btn"
+            android:padding="15dp"
+            android:textColor="#555555"
+            />
+    </LinearLayout>
+
+</LinearLayout>

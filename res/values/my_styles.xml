@@ -1,0 +1,33 @@
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <style name="AppBaseTheme" parent="android:Theme.Light.NoTitleBar"></style>
+    <!-- Application theme. -->
+    <style name="AppTheme" parent="AppBaseTheme">
+        <item name="android:progressBarStyle">@style/MyProgressBarStyle</item>
+    </style>
+
+    <!-- 应用全局默认的 progressBar 样式 -->
+    <style name="MyProgressBarStyle" parent="@android:style/Widget.ProgressBar">
+        <item name="android:indeterminateDrawable">@drawable/my_progressbar_drawable</item>
+        <item name="android:indeterminateDuration">500</item>
+    </style>
+
+    <style name="match_parent">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+    </style>
+
+    <style name="wrap_content">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="match_wrap" parent="@style/match_parent">
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="wrap_match" parent="@style/match_parent">
+        <item name="android:layout_width">wrap_content</item>
+    </style>
+
+</resources>
