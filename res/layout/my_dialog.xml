@@ -11,8 +11,8 @@
         android:gravity="center"
         android:padding="10dp"
         android:background="@drawable/my_dialog_up_bg"
-        android:textColor="@android:color/black"
-        android:textSize="20sp" />
+        android:textColor="#333333"
+        android:textSize="16sp" />
 
     <ImageView
         android:layout_width="match_parent"
@@ -35,7 +35,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:textSize="16sp"
-            android:textColor="@android:color/black" />
+            android:textColor="#333333" />
     </ScrollView>
 
     <ImageView
@@ -53,7 +53,7 @@
             android:layout_weight="1"
             android:background="@drawable/my_dialog_left_btn"
             android:padding="15dp"
-            android:textColor="#555555"
+            android:textColor="#333333"
             />
 
         <ImageView
@@ -68,7 +68,7 @@
             android:layout_weight="1"
             android:background="@drawable/my_dialog_right_btn"
             android:padding="15dp"
-            android:textColor="#555555"
+            android:textColor="#333333"
             />
     </LinearLayout>
 

@@ -6,7 +6,7 @@ package com.my.android.utils;
  *
  */
 public class AppUtil {
-	public static boolean isDebug;
+	public static boolean isDebug = true;
 	public static boolean isLocal;
 	
 	public static int appVersion;

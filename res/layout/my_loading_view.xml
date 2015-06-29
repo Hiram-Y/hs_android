@@ -5,10 +5,10 @@
     <LinearLayout 
         style="@style/wrap_content" 
         android:background="@drawable/my_bg_white_round"
-        android:minWidth="200dp"
+        android:minWidth="220dp"
         android:layout_centerInParent="true"
         android:gravity="center"
-        android:padding="8dp"
+        android:padding="10dp"
         >
         <ProgressBar
             style="@style/wrap_content"
