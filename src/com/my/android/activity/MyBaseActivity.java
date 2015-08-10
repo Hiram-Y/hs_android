@@ -410,48 +410,8 @@ public class MyBaseActivity extends FragmentActivity implements MyRequestListene
 		
 	}
 	
-	public TextView findTextView(int id){
-		 return (TextView) findViewById(id);
-	}
-	
-	public Button findButton(int id){
-		return (Button) findViewById(id);
-	}
-	
-	public ImageView findImageView(int id){
-		return (ImageView) findViewById(id);
-	}
-	
-	public EditText findEditText(int id){
-		return (EditText) findViewById(id);
-	}
-	
-	public CheckBox findCheckBox(int id){
-		return (CheckBox) findViewById(id);
-	}
-	
-	public RadioButton findRadioButton(int id){
-		return (RadioButton) findViewById(id);
-	}
-	
-	public RadioGroup findRadioGroup(int id){
-		return (RadioGroup) findViewById(id);
-	}
-	
-	public LinearLayout findLinearLayout(int id){
-		return (LinearLayout) findViewById(id);
-	}
-	
-	public FrameLayout findFrameLayout(int id){
-		return (FrameLayout) findViewById(id);
-	}
-	
-	public RelativeLayout findRelativeLayout(int id){
-		return (RelativeLayout) findViewById(id);
-	}
-	
-	public ListView findListView(int id){
-		return (ListView)findViewById(id);
+	public <V extends View> V findView(int id) {
+		return (V) findViewById(id);
 	}
 	
 	
