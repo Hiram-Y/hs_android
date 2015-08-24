@@ -410,9 +410,9 @@ public class MyBaseActivity extends FragmentActivity implements MyRequestListene
 		
 	}
 	
-    public <V extends View> V findView(int id) {
-        return (V) findViewById(id);
-    }
+	public <V extends View> V findView(int id) {
+		return (V) findViewById(id);
+	}
 	
 	
 	/**
