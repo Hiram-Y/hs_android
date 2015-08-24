@@ -527,12 +527,4 @@ public class MyBaseActivity extends FragmentActivity implements MyRequestListene
 	public void onDialogRightBtnClick(MyDialogFragment dialog) {
 		dialog.dismiss();
 	}
-	
-	public String getEditString(int id){
-		return getEditString(findEditText(id));
-	}
-	
-	public String getEditString(EditText et) {
-		return et.getText().toString().trim();
-	}
 }
