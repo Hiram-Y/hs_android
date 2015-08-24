@@ -153,4 +153,8 @@ public class MyBaseFragment extends Fragment implements MyRequestListener,OnClic
 	public void showToast(String content,int length){
 		ToastUtil.showToast(getActivity(), content,length);
 	}
+
+	public <V extends View> V findView(int id){
+        return (V) getView().findViewById(id);
+    }
 }
