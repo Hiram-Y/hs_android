@@ -101,7 +101,7 @@ public class MyRequestQueue {
 		if(mRequestQueue == null){
 			return;
 		}
-		mRequestQueue.cancelAll(new RequestQueue.RequestFilter() {
+		MyRequestQueue.cancelAll(new RequestQueue.RequestFilter() {
 			@Override
 			public boolean apply(Request<?> request) {
 				return true;
@@ -110,7 +110,7 @@ public class MyRequestQueue {
 //		mRequestQueue = null;
 //		mImageLoader = null;
 	}
-	public static void canceAll(RequestFilter filter) {
+	public static void cancelAll(RequestFilter filter) {
 		if(mRequestQueue == null || filter == null){
 			return;
 		}
@@ -120,11 +120,19 @@ public class MyRequestQueue {
 	 * 终止给定tag 的所有请求
 	 * @param tag
 	 */
-	public static void cance(Object tag) {
-		if(mRequestQueue == null){
+	public static void cancelAll(final String tag) {
+		if(mRequestQueue == null || tag == null){
 			return;
 		}
-		mRequestQueue.cancelAll(tag);
+		MyRequestQueue.cancelAll(new RequestFilter() {
+			@Override
+			public boolean apply(Request<?> request) {
+				if(tag.equals(request.getTag())){
+					return true;
+				}
+				return false;
+			}
+		});
 	}
 	
 	public static void destroy(){

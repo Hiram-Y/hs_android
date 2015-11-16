@@ -64,7 +64,7 @@ public class MyRequest extends Request<MyResponse>{
 		}
 		this.listener = listener;
 		this.identify = id;
-		setTag(listener);
+		setTag(listener.getClass().getName());
 		setShouldCache(false);
 	}
 	

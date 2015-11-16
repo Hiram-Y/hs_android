@@ -117,20 +117,20 @@ public class MyBaseFragment extends Fragment implements MyRequestListener,OnClic
 	/**fragment 关联的视图销毁时取消当前fragment监听的所有请求*/
 	@Override
 	public void onDestroyView() {
-		MyRequestQueue.cance(this);
+		MyRequestQueue.cancelAll(this.getClass().getName());
 		super.onDestroyView();
 	}
 	
 	/**fragment 销毁时取消当前fragment监听的所有请求*/
 	@Override
 	public void onDestroy() {
-		MyRequestQueue.cance(this);
+		MyRequestQueue.cancelAll(this.getClass().getName());
 		super.onDestroy();
 	}
 	/**fragment 从activity中移除时取消当前fragment监听的所有请求*/
 	@Override
 	public void onDetach() {
-		MyRequestQueue.cance(this);
+		MyRequestQueue.cancelAll(this.getClass().getName());
 		super.onDetach();
 	}
 	
@@ -153,4 +153,7 @@ public class MyBaseFragment extends Fragment implements MyRequestListener,OnClic
 	public void showToast(String content,int length){
 		ToastUtil.showToast(getActivity(), content,length);
 	}
+	public <V extends View> V findView(int id){
+        return (V) getView().findViewById(id);
+    }
 }

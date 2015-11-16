@@ -1,6 +1,7 @@
 package com.my.android.activity;
 
 import java.util.ArrayList;
+
 import com.android.volley.NetworkError;
 import com.android.volley.NoConnectionError;
 import com.android.volley.ParseError;
@@ -15,18 +16,29 @@ import com.my.android.fragment.MyActionSheetFragment;
 import com.my.android.fragment.MyActionSheetFragment.ActionSheetListener;
 import com.my.android.fragment.MyDialogFragment;
 import com.my.android.fragment.MyDialogFragment.MyDialogClickListener;
+import com.my.android.fragment.MyImageChooseFragment.ChooseCompleteListener;
+import com.my.android.fragment.MyImageChooseFragment;
+import com.my.android.listener.MyAsyncListener;
 import com.my.android.network.MyRequest;
 import com.my.android.network.MyRequestListener;
 import com.my.android.network.MyRequestQueue;
 import com.my.android.network.MyResponse;
 import com.my.android.network.NetworkMethod;
-import com.my.android.utils.LogUtil;
+import com.my.android.utils.ImageUtil;
+import com.my.android.utils.StringUtil;
 import com.my.android.utils.ToastUtil;
+
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.support.v4.app.FragmentActivity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -39,19 +51,27 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * 所有Activity的父类，如无特殊需求，项目中的Activity都应该是该类的直接或间接子类
  * @author hushuai
  */
-public class MyBaseActivity extends FragmentActivity implements MyRequestListener,OnClickListener,MyDialogClickListener{	
+public class MyBaseActivity extends FragmentActivity implements MyRequestListener,OnClickListener,MyDialogClickListener,MyAsyncListener{	
 	private View loadingView;
 	private static String loadingText;
+	
+	private HandlerThread my_handlerThread;
+	private Handler my_uiHandler,my_asyncHandler;
+	
 	@Override
 	protected void onCreate(Bundle bundle) {
 		super.onCreate(bundle);
 	}
 
+	public void startActivity(Class<?extends Activity> clazz){
+		startActivity(new Intent(this, clazz));
+	}
 	/**
 	 * 请求数据，默认显示加载框，默认以POST方式
 	 * <p>请求成功回调本类以RequestBean.response_methodName的值为方法名的方法,请求出错回调本类的onErrorRequest 方法
@@ -128,6 +148,16 @@ public class MyBaseActivity extends FragmentActivity implements MyRequestListene
 		}
 		return MyRequestQueue.requestUrl(id, url, method,listenter);
 	}
+	
+	/**
+	 * 请求网络图片
+	 * @param imageView
+	 * @param url
+	 * @param defaultId 默认图片资源id
+	 */
+	public void requestImage(ImageView imageView,String url,int defaultId){
+		ImageUtil.requestImage(imageView, url, defaultId, null, this.getClass().getName());
+	}
 
 	@Override
 	public void onSuccessRequest(int id,MyResponse response) {
@@ -140,7 +170,7 @@ public class MyBaseActivity extends FragmentActivity implements MyRequestListene
 	 */
 	@Override
 	public void onErrorRequest(int id,MyResponse response) {
-		String content = "获取数据失败!";
+		String content = null;
 		VolleyError error = response.getError();
 		if(error instanceof NoConnectionError){//当前设备无网络连接
 			content = "当前无网络连接，请检查网络";
@@ -153,10 +183,110 @@ public class MyBaseActivity extends FragmentActivity implements MyRequestListene
 		}else if(error instanceof ServerError){//服务器错误
 			content = "服务器错误，请稍后再试!";
 		}else{//其他错误
-			
+			content = error.getMessage();
+		}
+		if(StringUtil.isEmpty(content)){
+			content = "获取数据失败";
 		}
 		showToast(content);
-		LogUtil.log(error);
+	}
+	
+	/**
+	 * 开启异步操作, 多个异步按顺序执行， 不支持并发。
+	 * @param id 异步操作的id， 
+	 * 异步耗时操作对应在doInBackground方法里完成，耗时操作完成后对应在doInUI方法里操作界面。
+	 */
+	public void startAsync(final int id){
+		startAsync(id,this);
+	}
+	/**
+	 * 开启异步操作,操作完回调UI, 多个异步按顺序执行， 不支持并发。
+	 * <pre>
+	 * 		void doSomething(){
+	 * 			//开启异步
+	 * 			startAsync(1);
+	 * 		}
+	 * 		public Object doInBackground(int id){
+	 * 			if(id == 1){
+	 * 				xxxxxxxxx你要做的是事情xxxxxxxxxx
+	 * 				return  xxx 你要返回给UI方法的数据
+	 * 			}
+	 * 		}
+	 * 		public void doInUI(int id,Object result){
+	 * 			if(id == 1){
+	 * 				你要进行UI 操作的代码
+	 * 			}
+	 * 		}
+	 * </pre>
+	 * @param id 异步操作的id， 
+	 * @param listener 异步监听
+	 * 异步耗时操作对应在doInBackground方法里完成，耗时操作完成后对应在doInUI方法里操作界面。
+	 */
+	public void startAsync(final int id, final MyAsyncListener listener){
+		if(listener == null){
+			return;
+		}
+		initAsyncHandler(true);
+		my_asyncHandler.post(new Runnable() {
+			@Override
+			public void run() {
+				final Object obj = listener.doInBackground(id);
+				if(my_uiHandler == null){
+					return;
+				}
+				my_uiHandler.post(new Runnable() {
+					@Override
+					public void run() {
+						listener.doInUI(id, obj);
+					}
+				});
+			}
+		});
+	}
+	
+	/**在线程中执行任务, 纯后台执行，可直接调用， 执行完不回调UI*/
+	public void doInBackground(Runnable run){
+		initAsyncHandler(false);
+		my_asyncHandler.post(run);
+	}
+
+	private void initAsyncHandler(boolean isInitUIHandler) {
+		if(my_handlerThread == null || !my_handlerThread.isAlive()){
+			my_handlerThread = null;
+			my_handlerThread = new HandlerThread(this.getClass().getName());
+			my_handlerThread.start();
+			my_asyncHandler = new Handler(my_handlerThread.getLooper());
+		}	
+		if(my_uiHandler == null && isInitUIHandler){
+			my_uiHandler = new Handler();
+		}
+		if(my_asyncHandler == null){
+			my_asyncHandler = new Handler(my_handlerThread.getLooper());
+		}
+	}
+	
+	protected void stopAllAsync(){
+		if(my_handlerThread != null && my_handlerThread.isAlive()){
+			my_handlerThread.quit();
+		}
+		my_handlerThread = null;
+		my_asyncHandler = null;
+	}
+	
+	/**
+	 * 此方法在子线程里执行，不阻塞UI，不能直接调用此方法，必须用startAsync(id)开启异步，
+	 * @param id 异步耗时操作的id， 回调完成后回调doInUI()方法，id相对应
+	 */
+	public Object doInBackground(int id){
+		return null;
+	}
+	
+	/**
+	 * doInBackground 对应的回调方法，此方法在主线程中执行，用来操作UI
+	 * @param id
+	 */
+	public void doInUI(int id,Object result){
+		
 	}
 	
 	/**
@@ -169,6 +299,10 @@ public class MyBaseActivity extends FragmentActivity implements MyRequestListene
 	public final void showLoading(int loadingId) {
 		if(loadingView == null){
 			loadingView = initLoadingView();
+		}
+		if(loadingText != null){
+			TextView tv = (TextView) loadingView.findViewById(R.id.tv_loadingHint);
+			tv.setText(loadingText);
 		}
 		ArrayList<Integer> list = (ArrayList<Integer>) loadingView.getTag();
 		list.add(loadingId);
@@ -183,12 +317,15 @@ public class MyBaseActivity extends FragmentActivity implements MyRequestListene
 	@SuppressLint("InflateParams")
 	protected View initLoadingView(){
 		View loadingView = getLayoutInflater().inflate(R.layout.my_loading_view, null);
-		if(loadingText != null){
-			TextView tv = (TextView) loadingView.findViewById(R.id.tv_loadingHint);
-			tv.setText(loadingText);
-		}
 		ArrayList<Integer> list = new ArrayList<Integer>();
 		loadingView.setTag(list);
+		loadingView.setOnTouchListener(new OnTouchListener() {
+			@SuppressLint("ClickableViewAccessibility")
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				return true;
+			}
+		});
 		return loadingView;
 	}
 	
@@ -217,33 +354,54 @@ public class MyBaseActivity extends FragmentActivity implements MyRequestListene
 	 */
 	@Override
 	public void onBackPressed() {
-		if(loadingView != null && loadingView.getParent() != null){
-			((ViewGroup)loadingView.getParent()).removeView(loadingView);
+		if(loadingView == null || loadingView.getParent() == null){
+			super.onBackPressed();
+			return;
 		}
-		/*取消‘同步’ 网络请求
-		 *这里的‘同步’是指业务需求和流程上的同步。
-		 */
-		MyRequestQueue.canceAll(new RequestFilter() {
+		((ViewGroup)loadingView.getParent()).removeView(loadingView);
+		cancelSyncRequest();
+	}
+	
+	@Override
+	public void finish() {
+		release();
+		super.finish();
+	}
+	
+	private void release(){
+		stopAllAsync();
+		my_uiHandler = null;
+		MyRequestQueue.cancelAll(this.getClass().getName());
+	}
+	
+	/**取消‘同步’ 网络请求
+	 * 这里的‘同步’是指业务需求和流程上的同步。
+	 */
+	private void cancelSyncRequest() {
+		MyRequestQueue.cancelAll(new RequestFilter() {
 			@SuppressWarnings("unchecked")
 			@Override
 			public boolean apply(Request<?> request) {
+				if(loadingView == null){
+					return false;
+				}
 				if(request instanceof MyRequest){
 					MyRequest mr = (MyRequest) request;
 					ArrayList<Integer> list = (ArrayList<Integer>) loadingView.getTag();
-					if(list.contains(mr.getIdentify())){
+					if(list != null && list.contains(mr.getIdentify())){
+						list.remove(Integer.valueOf(mr.getIdentify()));
 						return true;
 					}
 				}
 				return false;
 			}
 		});
-		super.onBackPressed();
 	}
 	
-	/**activity 销毁时取消当前activity监听的所有请求*/
+	/**activity销毁时取消当前activity监听的所有未完成的请求*/
 	@Override
 	protected void onDestroy() {
-		MyRequestQueue.cance(this);
+		release();
 		super.onDestroy();
 	}
 	
@@ -252,48 +410,8 @@ public class MyBaseActivity extends FragmentActivity implements MyRequestListene
 		
 	}
 	
-	public TextView findTextView(int id){
-		 return (TextView) findViewById(id);
-	}
-	
-	public Button findButton(int id){
-		return (Button) findViewById(id);
-	}
-	
-	public ImageView findImageView(int id){
-		return (ImageView) findViewById(id);
-	}
-	
-	public EditText findEditText(int id){
-		return (EditText) findViewById(id);
-	}
-	
-	public CheckBox findCheckBox(int id){
-		return (CheckBox) findViewById(id);
-	}
-	
-	public RadioButton findRadioButton(int id){
-		return (RadioButton) findViewById(id);
-	}
-	
-	public RadioGroup findRadioGroup(int id){
-		return (RadioGroup) findViewById(id);
-	}
-	
-	public LinearLayout findLinearLayout(int id){
-		return (LinearLayout) findViewById(id);
-	}
-	
-	public FrameLayout findFrameLayout(int id){
-		return (FrameLayout) findViewById(id);
-	}
-	
-	public RelativeLayout findRelativeLayout(int id){
-		return (RelativeLayout) findViewById(id);
-	}
-	
-	public ListView findListView(int id){
-		return (ListView)findViewById(id);
+	public <V extends View> V findView(int id) {
+		return (V) findViewById(id);
 	}
 	
 	
@@ -302,7 +420,7 @@ public class MyBaseActivity extends FragmentActivity implements MyRequestListene
 	 * @param content 要提示的内容
 	 */
 	public void showToast(String content){
-		showToast(content,1);
+		showToast(content,Toast.LENGTH_SHORT);
 	}
 	
 	/**
@@ -360,7 +478,6 @@ public class MyBaseActivity extends FragmentActivity implements MyRequestListene
 	
 	/**
 	 * 显示选项卡控件
-	 * <p>效果见：<a href="https://raw.githubusercontent.com/baoyongzhang/ActionSheetForAndroid/master/screenshot-2.png">UI效果演示图</a>
 	 * @param items 选择项的文字
 	 * @param listener 选择之后的监听
 	 */
@@ -372,12 +489,33 @@ public class MyBaseActivity extends FragmentActivity implements MyRequestListene
 	 * 
 	 * @param items
 	 * @param listener
-	 * @param textColor 选项文字的颜色, 不能直接传R.color.xx, 要这样传 getResources.getColor(R.color.xx)
+	 * @param textColor 选项文字的颜色, 不能直接传R.color.xx, 要这样传 getResources.getColor(R.color.xx), 或者直接传16进制色值
 	 */
 	public void showActionSheet(String[] items, ActionSheetListener listener, int textColor){
 		MyActionSheetFragment.newInstance().setItems(items).setItemTextColor(textColor)
 		.setActionSheetListener(listener)
 		.show(getSupportFragmentManager(), "actionSheet");
+	}
+	
+	/**调用图片选择、裁剪
+	 *@param isCrop 选择图片后是否裁剪
+	 *@param listener 选择、裁剪后的回调监听
+	 */
+	public MyImageChooseFragment showImageChooseActionSheet(boolean isCrop,ChooseCompleteListener listener){
+		MyImageChooseFragment icf = MyImageChooseFragment.newInstance(isCrop,0,0,listener);
+		icf.show(getSupportFragmentManager(), "imageChoose");
+		return icf;
+	}
+	/**
+	 * @param isCrop 是否需要裁剪
+	 * @param scale_width、scale_height 裁剪比例 1：1表示裁剪正方形
+	 * @param listener 选择裁剪完成后的回调
+	 * <p>isCrop为true时scale_width、scale_height参数才有效
+	 */
+	public MyImageChooseFragment showImageChooseActionSheet(boolean isCrop,int scale_width,int scale_height, ChooseCompleteListener listener){
+		MyImageChooseFragment icf = MyImageChooseFragment.newInstance(isCrop,0,0,listener);
+		icf.show(getSupportFragmentManager(), "imageChoose");
+		return icf;
 	}
 
 	@Override
@@ -388,5 +526,13 @@ public class MyBaseActivity extends FragmentActivity implements MyRequestListene
 	@Override
 	public void onDialogRightBtnClick(MyDialogFragment dialog) {
 		dialog.dismiss();
+	}
+	
+	public String getEditString(int id){
+		return getEditString(findEditText(id));
+	}
+	
+	public String getEditString(EditText et) {
+		return et.getText().toString().trim();
 	}
 }

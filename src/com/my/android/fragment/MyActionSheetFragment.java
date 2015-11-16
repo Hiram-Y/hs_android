@@ -4,6 +4,7 @@ import com.my.android.utils.ScreenUtil;
 import com.my.android.view.MyAnimator;
 import com.my.android.view.MyAnimator.AnimType;
 import com.my.android.view.MyAnimator.MyAnimatorListener;
+
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
@@ -23,10 +24,10 @@ import android.widget.LinearLayout.LayoutParams;
 
 /**
  * 选项卡控件
- *<p>效果见：<a href="https://raw.githubusercontent.com/baoyongzhang/ActionSheetForAndroid/master/screenshot-2.png">UI效果演示图</a>
+ * @author hushuai
  */
 public class MyActionSheetFragment extends DialogFragment {
-	private static final AnimType animIn = AnimType.FlipInX , animOut = AnimType.FlipOutX;
+	static final AnimType animIn = AnimType.FlipInX , animOut = AnimType.FlipOutX;
 	private static final Integer CANCEL_BTN_TAG = -1;
 	private ActionSheetListener mListener;
 	private String cancelBtnText;
@@ -36,7 +37,7 @@ public class MyActionSheetFragment extends DialogFragment {
 	private OnClickListener btnClickListener = new OnClickListener() {
 		@Override
 		public void onClick(View v) {
-			dismiss();
+			dismissWithAnim();
 			if(mListener == null){
 				return;
 			}
@@ -46,7 +47,6 @@ public class MyActionSheetFragment extends DialogFragment {
 			}else{
 				mListener.onItemClick(MyActionSheetFragment.this, position);
 			}
-			
 		}
 	};
 	
@@ -132,7 +132,7 @@ public class MyActionSheetFragment extends DialogFragment {
 	public int show(FragmentTransaction transaction, String tag) {
 		int i = super.show(transaction, tag);
 		getFragmentManager().executePendingTransactions();
-		MyAnimator.newInstance(animIn).playOn(getView());
+		MyAnimator.newInstance(animIn).setDuration(800).playOn(getView());
 		return i;
 	}
 	
@@ -180,15 +180,14 @@ public class MyActionSheetFragment extends DialogFragment {
 		public void onCancel(MyActionSheetFragment actionSheet);
 	}
 	
-	@Override
-	public void dismiss() {
-		MyAnimator.newInstance(animOut).setDuration(300).setListener(new MyAnimatorListener() {
+	public void dismissWithAnim() {
+		MyAnimator.newInstance(animOut).setDuration(200).setListener(new MyAnimatorListener() {
 			@Override
 			public void onAnimationStart() {
 			}
 			@Override
 			public void onAnimationEnd() {
-				MyActionSheetFragment.super.dismiss();
+				dismiss();
 			}
 		}).playOn(getView());
 	}

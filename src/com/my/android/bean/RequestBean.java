@@ -18,7 +18,7 @@ import com.my.android.utils.StringUtil;
  * <p>2. 请求成功后会在回调监听器中回调一个方法，回调方法的方法名就是 initResponseMethodName方法返回的，
  * 该方法默认返回的方法名为：子类的类名去掉后缀“Bean” + “Response” 
  * 所以务必要在回调监听器 MyRequestListener 的实现类中加入对应方法名的方法, 方法参数为封装类。
- * 当然如果使用eclipse插件会自动生成
+ * 当然如果使用插件会自动生成
  * @author hushuai
  */
 public class RequestBean implements BaseBean {
